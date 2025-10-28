@@ -1,4 +1,4 @@
-from flask import abort, make_response, Blueprint, request
+from flask import Response, abort, make_response, Blueprint, request
 from ..models.cat import Cat
 from ..db import db
 
@@ -46,56 +46,53 @@ def get_all_cats():
 
     return result_list
 
+@cats_bp.get("/<int:id>")
+def get_some_cat(id):
+    cat = validate_cat(id)
 
-# @cats_bp.get("")
-# def get_all_cats():
-#     result_list = []
+    result = {
+        "id": cat.id,
+        "name": cat.name,
+        "color": cat.color,
+        "personality": cat.personality
+    }
+    return result, 200
 
-#     # for cat in cats:
-#     #     result_list.append(dict(
-#     #         id=cat.id,
-#     #         name=cat.name,
-#     #         color=cat.color,
-#     #         personality=cat.personality
-#     #     ))
+@cats_bp.put("/<id>")
+def replace_cat(id):
+    cat = validate_cat(id)
 
-#     # return result_list
+    request_body = request.get_json()
+    cat.name = request_body["name"]
+    cat.color = request_body["color"]
+    cat.personality = request_body["personality"]
 
-#     for cat in cats:
-#         result_list.append({
-#             "id": cat.id,
-#             "name": cat.name,
-#             "color": cat.color,
-#             "personality": cat.personality
-#         })
+    db.session.commit()
 
-#     return result_list
+    return "", 204
 
-# @cats_bp.get("/<id>")
-# def get_some_cats(id):
+@cats_bp.delete("/<id>")
+def delete_cat(id):
+    cat = validate_cat(id)
+    db.session.delete(cat)
+    db.session.commit()
     
-#     cat = validate_cat(id)
+    return "", 204
 
-#     cat_dict =  dict(
-#         id=cat.id,
-#         name=cat.name,
-#         color=cat.color,
-#         personality=cat.personality
-#         )
+
         
-#     return cat_dict
+def validate_cat(id):
+    try:
+        id = int(id)
+    except ValueError:
+        invalid = {"message": f"Cat id ({id}) is invalid."}
+        abort(make_response(invalid, 400))
+
+    query = db.select(Cat).where(Cat.id == id)
+    cat = db.session.scalar(query)
+
+    if not cat:
+        not_found = {"message": f"Cat with id ({id}) not found"}
+        abort(make_response(not_found, 404))
     
-        
-# def validate_cat(id):
-#     try:
-#         id = int(id)
-#     except ValueError:
-#         invalid = {"message": f"cat id ({id}) is invalid."}
-#         abort(make_response(invalid, 400))
-
-#     for cat in cats:
-#             if cat.id == id:
-#                 return cat
-            
-#     not_found = {"message": f"Cat with id ({id}) not found"}
-#     abort(make_response(not_found, 404))
+    return cat
