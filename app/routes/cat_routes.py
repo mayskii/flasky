@@ -69,7 +69,8 @@ def replace_cat(id):
 
     db.session.commit()
 
-    return "", 204
+    # return "", 204
+    return Response(status=204, mimetype="application/json")
 
 @cats_bp.delete("/<id>")
 def delete_cat(id):
@@ -77,8 +78,8 @@ def delete_cat(id):
     db.session.delete(cat)
     db.session.commit()
     
-    return "", 204
-
+    # return "", 204
+    return Response(status=204, mimetype="application/json")
 
         
 def validate_cat(id):
