@@ -27,7 +27,7 @@ def create_cat():
         personality=new_cat.personality
     )
 
-    return cat_response, 200
+    return cat_response, 201
 
 
 @cats_bp.get("")
