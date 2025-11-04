@@ -1,7 +1,7 @@
 from flask import Response, abort, make_response, Blueprint, request
 from ..models.cat import Cat
 from ..db import db
-from .routes_utilities import validate_model
+from .routes_utilities import validate_model, create_model, get_models_with_filters
 
 bp = Blueprint("cat_bp", __name__, url_prefix="/cats")
 
@@ -9,27 +9,7 @@ bp = Blueprint("cat_bp", __name__, url_prefix="/cats")
 def create_cat():
     request_body = request.get_json()
 
-    # name = request_body["name"]
-    # color = request_body["color"]
-    # personality = request_body["personality"]
-
-    # new_cat = Cat(
-    #     name=name,
-    #     color=color,
-    #     personality=personality
-    # )
-
-    try:
-        new_cat = Cat.from_dict(request_body)
-
-    except KeyError as error:
-        response = {"message": f"Invalid request: missing {error.args[0]}"}
-        abort(make_response(response, 400))
-
-    db.session.add(new_cat)
-    db.session.commit()
-
-    return new_cat.to_dict(), 201
+    return create_model(Cat, request_body)
 
 
 @bp.get("")
